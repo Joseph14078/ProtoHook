@@ -5,4 +5,4 @@ Protohook hooks onto the prototype functions in JS objects and intercepts them t
 
 ## Is this dangerous?
 
-Probably. I'll be testing it out in a few projects before determining if it's work pursuing.
+Probably. I'll be testing it out in a few projects before determining if it's worth pursuing.
