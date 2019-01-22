@@ -1,0 +1,19 @@
+{
+  "name": "protohook",
+  "version": "0.0.1",
+  "description": "Hooks onto the prototype functions in JS objects and intercepts them to create a seameless pub-sub type system.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Joseph14078/ProtoHook.git"
+  },
+  "author": "Joseph Judge",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Joseph14078/ProtoHook/issues"
+  },
+  "homepage": "https://github.com/Joseph14078/ProtoHook#readme"
+}
