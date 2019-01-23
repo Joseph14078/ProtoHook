@@ -25,7 +25,8 @@ _PHGroup.prototype.bind = function(ref, func, step, callback) {
     func = funcAndKey[0];
     var funcKey = funcAndKey[1];
 
-    if (!func._PHOriginal) this._hook(ref, funcKey);
+    var newFuncDest = this._getNewFuncDest(ref);
+    if (!newFuncDest[funcKey]._PHOriginal) this._hook(ref, funcKey);
 
     if (typeof this._binds.get(ref) == 'undefined')
         this._binds.set(ref, {});
@@ -164,7 +165,7 @@ _PHGroup.prototype._hook = function(ref, func) {
     func = funcAndKey[0];
     var funcKey = funcAndKey[1];
     
-    if (!newFuncDest[funcKey]._PHOriginal) throw "Function is already hooked.";
+    if (newFuncDest[funcKey]._PHOriginal) throw "Function is already hooked.";
     
     var phGroup = this;
 
