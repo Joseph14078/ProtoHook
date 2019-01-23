@@ -4,6 +4,21 @@
     <script src="./index.js"></script>
 </head>
 <body>
-    <h1>Protohook Demo</h1>
+    <h1>ProtoHook Demo</h1>
     Open your dev console to give Protohook a shot.
+    <script>
+    var Test = function() { };
+    Test.prototype.foo = function() { console.log("foo"); };
+    Test.prototype.bar = function() { console.log("bar"); };
+    
+    var test = new Test();
+    var test2 = new Test();
+    var test3 = new Test();
+    
+    PH.bind(test, test.foo, "start", function() { console.log("test"); });
+    PH.bind(Test, Test.prototype.bar, "end", function() { console.log("test"); });
+    
+    var bindNum = PH.bind(test3, test3.foo, "start", function() { console.log("test"); });
+    PH.unbind(test3, test3.foo, "start", bindNum);
+    </script>
 </body>
