@@ -1,6 +1,6 @@
 var _PHGroup = function() {
-    this._bindNum = 0;
     this._binds = new Map();
+    this._bindsAll = {};
 };
 
 _PHGroup.prototype._run = function(ref, funcKey, step,  obj, args, result) {
@@ -16,7 +16,7 @@ _PHGroup.prototype._run = function(ref, funcKey, step,  obj, args, result) {
     var stepBindsKeys = Object.keys(stepBinds);
     for (var i = 0; i < stepBindsKeys.length; i++) {
         var key = stepBindsKeys[i];
-        stepBinds[key](obj, args, result);
+        stepBinds[key](result, args, obj);
     }
 };
 
@@ -40,12 +40,24 @@ _PHGroup.prototype.bind = function(ref, func, step, callback) {
     var stepBinds = funcBinds[step];
     step = step || 'end';
 
-    stepBinds[this._bindNum] = callback;
+    var bindKey = Math.random();
 
-    return this._bindNum++;
+    stepBinds[bindKey] = callback;
+    this._bindsAll[bindKey] = [ref, funcKey, step];
+
+    return bindKey;
 };
 
-_PHGroup.prototype.unbind = function(ref, func, step, bindNum) {
+_PHGroup.prototype.unbind = function(bindKey) {
+    if (typeof this._bindsAll[bindKey] == "undefined")
+        throw "bindKey not found."
+
+    var bindParams = this._bindsAll[bindKey];
+    this._unbindDo(bindParams[0], bindParams[1], bindParams[2], bindKey);
+};
+
+
+_PHGroup.prototype._unbindDo = function(ref, func, step, bindKey) {
     var funcAndKey = this._findFuncAndKey(ref, func);
     func = funcAndKey[0];
     var funcKey = funcAndKey[1];
@@ -62,7 +74,8 @@ _PHGroup.prototype.unbind = function(ref, func, step, bindNum) {
         funcBinds[step] = {};
     var stepBinds = funcBinds[step];
 
-    delete stepBinds[bindNum];
+    delete stepBinds[bindKey];
+    delete this._bindsAll[bindKey];
     
     if (Object.keys(stepBinds).length == 0)
         delete funcBinds[step];
@@ -151,7 +164,7 @@ _PHGroup.prototype._hook = function(ref, func) {
     func = funcAndKey[0];
     var funcKey = funcAndKey[1];
     
-    if (newFuncDest[funcKey]._PHOriginal) return;
+    if (!newFuncDest[funcKey]._PHOriginal) throw "Function is already hooked.";
     
     var phGroup = this;
 
@@ -162,6 +175,7 @@ _PHGroup.prototype._hook = function(ref, func) {
         phGroup._run(ref, funcKey, 'end', this, arguments, result);
     };
     newFuncDest[funcKey]._PHOriginal = func;
+    newFuncDest[funcKey]._PHGroup = this;
 };
 
 _PHGroup.prototype._unhook = function(ref, func) {
@@ -170,7 +184,8 @@ _PHGroup.prototype._unhook = function(ref, func) {
     func = funcAndKey[0];
     var funcKey = funcAndKey[1];
     
-    if (!newFuncDest[funcKey]._PHOriginal) return;
+    if (!newFuncDest[funcKey]._PHGroup == this) throw "Cannot unhook function while it is owned by another group.";
+    if (!newFuncDest[funcKey]._PHOriginal) throw "Function is not hooked.";
 
     var funcFromConstructor = !this._isProto(ref) && (ref.constructor.prototype[funcKey] === newFuncDest[funcKey]._PHOriginal);
 
