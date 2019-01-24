@@ -15,12 +15,17 @@ _PHGroup.prototype._run = function(ref, funcKey, step,  obj, args, result) {
 
     var stepBindsKeys = Object.keys(stepBinds);
     for (var i = 0; i < stepBindsKeys.length; i++) {
-        var key = stepBindsKeys[i];
-        stepBinds[key](result, args, obj);
+        var bindKey = stepBindsKeys[i];
+        stepBinds[bindKey].callback(result, args, obj);
+        if (!isNaN(stepBinds[bindKey].count)) {
+            stepBinds[bindKey].count--;
+            if (stepBinds[bindKey].count <= 0)
+                this._unbindDo(ref, funcKey, step, bindKey);
+        }
     }
 };
 
-_PHGroup.prototype.bind = function(ref, func, step, callback) {
+_PHGroup.prototype.bind = function(ref, func, step, callback, count) {
     var funcAndKey = this._findFuncAndKey(ref, func);
     func = funcAndKey[0];
     var funcKey = funcAndKey[1];
@@ -43,15 +48,17 @@ _PHGroup.prototype.bind = function(ref, func, step, callback) {
 
     var bindKey = Math.random();
 
-    stepBinds[bindKey] = callback;
+    stepBinds[bindKey] = {
+        callback: callback,
+        count: count <= 0 ? undefined : count
+    };
     this._bindsAll[bindKey] = [ref, funcKey, step];
 
     return bindKey;
 };
 
 _PHGroup.prototype.unbind = function(bindKey) {
-    if (typeof this._bindsAll[bindKey] == "undefined")
-        throw "bindKey not found."
+    if (typeof this._bindsAll[bindKey] == "undefined") return;
 
     var bindParams = this._bindsAll[bindKey];
     this._unbindDo(bindParams[0], bindParams[1], bindParams[2], bindKey);
